@@ -73,7 +73,6 @@ public class Mailer {
 			.withKey ("coteafs.mail.config")
 			.withDefault ("/mail-config.yaml")
 			.load (MailSetting.class);
-		withFlag (null, true);
 	}
 
 	/**

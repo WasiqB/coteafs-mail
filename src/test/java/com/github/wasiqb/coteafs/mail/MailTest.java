@@ -21,6 +21,8 @@ import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.github.wasiqb.coteafs.mail.enums.MailFlag;
+
 /**
  * @author wasiqb
  * @since Feb 4, 2019
@@ -37,6 +39,7 @@ public class MailTest {
 			.forRecipientTo ("xasysttest2@gmail.com")
 			.forSender ("patientpay@patientpay.com")
 			.fromDate (new DateTime (2019, 1, 23, 12, 14))
+			.withFlag (MailFlag.SEEN, true)
 			.search ();
 		Assert.assertEquals (message.size (), 1);
 		Assert.assertEquals (message.get (0)
