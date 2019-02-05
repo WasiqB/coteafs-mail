@@ -1,0 +1,6 @@
+folder: INBOX
+protocol: imaps
+host: imap.gmail.com
+port: 993
+user_id: ${user}
+passcode: ${pass}

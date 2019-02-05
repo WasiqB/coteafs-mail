@@ -1,0 +1,102 @@
+default: &default
+  working_directory: ~/repo
+  docker:
+    - image: circleci/openjdk:8-jdk
+  environment:
+    MAVEN_OPTS: -Xmx3200m
+    ANDROID_HOME: /usr/local/android-sdk-linux
+version: 2
+jobs:
+  code_checkout:
+    <<: *default
+    steps:
+      - checkout
+      - save_cache:
+          key: mail-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ~/repo
+  resolve_dependencies:
+    <<: *default
+    steps:
+      - restore_cache:
+          keys:
+            - mail-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Resolve Dependencies
+          command: mvn dependency:resolve
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: mail-dependency-{{ .Branch }}-{{ .Revision }}
+  build:
+    <<: *default
+    steps:
+      - restore_cache:
+          keys:
+            - mail-{{ .Branch }}-{{ .Revision }}
+            - mail-dependency-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Build project
+          command: mvn clean install -DskipTests=true
+      - save_cache:
+          key: mail-target-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - target/
+  test:
+    <<: *default
+    steps:
+      - restore_cache:
+          keys:
+            - mail-{{ .Branch }}-{{ .Revision }}
+            - mail-dependencies-{{ .Branch }}-{{ .Revision }}
+            - mail-target-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Run Tests with Sonar Coverage
+          command: mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -Duser=$USER -Dpass=$PASS -Pcoverage-per-test
+      - save_cache:
+          key: mail-reports-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - reports/
+  code_analysis:
+    <<: *default
+    steps:
+      - restore_cache:
+          keys:
+            - mail-{{ .Branch }}-{{ .Revision }}
+            - mail-dependencies-{{ .Branch }}-{{ .Revision }}
+            - mail-target-{{ .Branch }}-{{ .Revision }}
+            - mail-reports-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Update Sonar Analysis
+          command: mvn package sonar:sonar -Dsonar.host.url=$SONAR_HOST -Dsonar.organization=$SONAR_ORG -Dsonar.login=$SONAR_KEY -DskipTests=true
+
+filters: &all_branches
+  branches:
+    only:
+      - develop
+      - master
+      - release
+      - /issue-.*/
+
+workflows:
+  version: 2
+  normal_flow:
+    jobs:
+      - code_checkout:
+          filters: *all_branches
+      - resolve_dependencies:
+          filters: *all_branches
+          requires:
+            - code_checkout
+      - build:
+          filters: *all_branches
+          requires:
+            - resolve_dependencies
+      - test:
+          filters: *all_branches
+          requires:
+            - build
+      - code_analysis:
+          filters: *all_branches
+          requires:
+            - test
