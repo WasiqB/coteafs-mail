@@ -11,8 +11,8 @@ Add following dependency to your `pom.xml` in order to use this library.
 ```xml
 <dependency>
   <groupId>com.github.wasiqb.coteafs</groupId>
-  <artifactId>appium</artifactId>
-  <version>3.0.0</version>
+  <artifactId>mail</artifactId>
+  <version>1.0.0</version>
 </dependency>
 ```
 
