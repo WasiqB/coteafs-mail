@@ -35,14 +35,14 @@ public class MailTest {
 	@Test
 	public void testMail () {
 		final Mailer mail = new Mailer ();
-		final List <MailMessage> message = mail.withSubject ("You have a bill due")
-			.forRecipientTo ("xasysttest2@gmail.com")
-			.forSender ("patientpay@patientpay.com")
+		final List <MailMessage> message = mail.withSubject ("Your bill is due")
+			.forRecipientTo ("abcd@gmail.com")
+			.forSender ("wxyz@gmail.com")
 			.fromDate (new DateTime (2019, 1, 23, 12, 14))
 			.withFlag (MailFlag.SEEN, true)
 			.search ();
 		Assert.assertEquals (message.size (), 1);
 		Assert.assertEquals (message.get (0)
-			.getSubject (), "You have a bill due");
+			.getSubject (), "Your bill is due");
 	}
 }
